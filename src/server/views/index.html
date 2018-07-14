@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width">
+		<title>Rover</title>
+		<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet" />
+		<link href="/css/reset.css" rel="stylesheet">
+		<link href="/css/app.css" rel="stylesheet">
+	</head>
+	<body>
+		<div id="container">
+			<div id="header">
+				<h1>Rover</h1>
+			</div>
+			<div id="filter">
+				<div id="sort_overall">
+					<select id="orderBy">
+						<option value="asc">ASC</option>
+						<option value="desc">DESC</option>
+					</select>
+				</div>
+				<div id="sort_rating">
+					<select id="ratingSort">
+						<option value="1">Rating smaller or equal 1</option>
+						<option value="2">Rating smaller or equal 2</option>
+						<option value="3">Rating smaller or equal 3</option>
+						<option value="4">Rating smaller or equal 4</option>
+						<option selected value="5">Rating smaller or equal 5</option>
+					</select>
+					</div>
+			</div>
+			<div id="list"></div>
+		</div>
+		<script>
+		
+			class Store {
+				constructor() {
+					this.data = [];
+					this.error = null;
+				}
+
+				async loadData(url, callback) {
+					try {
+						const results = await fetch(url).then(res => res.json());
+						this.data = results.data;
+						callback();
+					} catch(error) {
+						this.error = error;
+						callback();
+					}
+				}
+			}
+
+			class View {
+				constructor() {
+					this.reducer = null;
+					this.orderBy = 'asc';
+					this.ratingScore = 5;
+					this.orderHandler();
+					this.sortHandler();
+				}
+
+				connect(reducer) {
+					this.reducer = reducer;
+					reducer.dispatch({type: 'LOAD_SITTER', orderBy: this.orderBy, ratingScore: this.ratingScore});
+				}
+
+				orderHandler() {
+					document.getElementById('orderBy').onchange = () => {
+						this.orderBy = document.getElementById('orderBy').value;
+						this.reducer.dispatch({type: 'LOAD_SITTER', orderBy: this.orderBy, ratingScore: this.ratingScore});
+					};
+				}
+
+				sortHandler() {
+					document.getElementById('ratingSort').onchange = () => {
+						this.ratingScore = document.getElementById('ratingSort').value;
+						this.reducer.dispatch({type: 'LOAD_SITTER', orderBy: this.orderBy, ratingScore: this.ratingScore});
+					};
+				}
+				
+				getName(name) {
+					return `<div class="item_name">${name}</div>`
+				}
+
+				getRating(rating_score) {
+					return `<div class="item_rating">${rating_score}</div>`
+				}
+
+				getImages(images) {
+					return `<div class="item_images">
+						${images.map(image => `<img src="${image}" />`).join('')}
+					</div>`
+				}
+
+				getItem(item) {
+					return `<div class="item_container">
+						${this.getName(item.name)}
+						${this.getRating(item.rating_score)}
+						${this.getImages(item.images)}
+					</div>`;
+				}
+
+				render(store) {
+					const html = store.data.length === 0 ? 'No Data' : store.data.map(this.getItem.bind(this)).join('');
+					document.getElementById('list').innerHTML = '';
+					document.getElementById('list').innerHTML = html;
+				}
+			}
+
+			class Reducer {
+				constructor(store, view) {
+					this.store = store;
+					this.view = view;
+				}
+
+				dispatch(action) {
+					switch (action.type) {
+						case 'LOAD_SITTER':
+							this.store.loadData('/api/v1/sitters?orderBy=' + action.orderBy + '&ratingScore=' + action.ratingScore, () => {
+								this.view.render(store);
+							});
+							break;
+						default:
+							break;
+					}
+					this.view.render(store);
+				}
+			}
+
+			const store = new Store();
+			const view = new View();
+			const reducer = new Reducer(store, view);
+			view.connect(reducer);
+
+		</script>
+	</body>
+</html>

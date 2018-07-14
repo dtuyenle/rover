@@ -1,0 +1,52 @@
+#container {
+	width: 100%;
+}
+
+#header {
+	margin: 2em;
+}
+
+#header h1 {
+	text-align: center;
+	color: #00a461;
+	font-weight: 900;
+	font-size: 2em;
+}
+
+#filter {
+  margin: 2em;
+  display: flex;
+}
+
+#list {
+	margin: 2em;
+}
+
+.item_container {
+	display: flex;
+	justify-content: space-between;
+	padding: 1em;
+	border: 1px solid #00a461;
+	margin: 1em 0;
+}
+
+.item_name {
+	width: 30%;
+	font-weight: 900;
+}
+
+.item_rating {
+	width: 10%;
+	font-size: 18px;
+}
+
+.item_images {
+	width: 60%;
+	display: flex;
+	margin-right: 10px;
+}
+
+.item_images img {
+	max-width: 100px;
+	height: 100px;
+}
